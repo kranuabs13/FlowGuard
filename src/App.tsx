@@ -27,6 +27,7 @@ import TaskList from './components/TaskList';
 import SettingsPanel from './components/SettingsPanel';
 
 export default function App() {
+  console.log("FlowGuard App Initializing...");
   const [activeTab, setActiveTab] = useState<TabType>('Dashboard');
   const [isRtl, setIsRtl] = useState(false);
   const [officeReady, setOfficeReady] = useState(false);
@@ -52,20 +53,25 @@ export default function App() {
 
   useEffect(() => {
     // @ts-ignore
-    Office.onReady((info) => {
-      if (info.host === Office.HostType.Outlook) {
-        setOfficeReady(true);
-        // @ts-ignore
-        const item = Office.context.mailbox.item;
-        if (item) {
-          setCurrentEmail({
-            subject: item.subject,
-            sender: item.from?.emailAddress || 'Unknown',
-            id: item.itemId
-          });
+    if (typeof Office !== 'undefined') {
+      // @ts-ignore
+      Office.onReady((info) => {
+        if (info.host === Office.HostType.Outlook) {
+          setOfficeReady(true);
+          // @ts-ignore
+          const item = Office.context.mailbox.item;
+          if (item) {
+            setCurrentEmail({
+              subject: item.subject,
+              sender: item.from?.emailAddress || 'Unknown',
+              id: item.itemId
+            });
+          }
         }
-      }
-    });
+      });
+    } else {
+      console.log("Office.js not detected, running in standalone mode");
+    }
   }, []);
 
   const tabs: { id: TabType; icon: any; label: string }[] = [

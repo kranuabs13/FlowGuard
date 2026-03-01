@@ -72,9 +72,11 @@ async function startServer() {
   // --- OAuth Routes ---
   app.get('/api/auth/url', (req, res) => {
     const client_id = process.env.MICROSOFT_CLIENT_ID;
-    const redirect_uri = `${process.env.APP_URL}/auth/callback`;
+    const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+    const redirect_uri = `${appUrl}/auth/callback`;
     
     if (!client_id) {
+      console.error("MICROSOFT_CLIENT_ID is missing");
       return res.status(500).json({ error: "MICROSOFT_CLIENT_ID not configured" });
     }
 
@@ -94,7 +96,8 @@ async function startServer() {
     const { code } = req.query;
     const client_id = process.env.MICROSOFT_CLIENT_ID;
     const client_secret = process.env.MICROSOFT_CLIENT_SECRET;
-    const redirect_uri = `${process.env.APP_URL}/auth/callback`;
+    const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+    const redirect_uri = `${appUrl}/auth/callback`;
 
     try {
       const response = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', new URLSearchParams({
@@ -188,12 +191,22 @@ async function startServer() {
 
   // --- Settings & Audit ---
   app.get("/api/settings", (req, res) => {
-    const settings = db.prepare("SELECT * FROM settings").all();
-    const result = settings.reduce((acc: any, curr: any) => {
-      acc[curr.key] = JSON.parse(curr.value);
-      return acc;
-    }, {});
-    res.json(result);
+    try {
+      const settings = db.prepare("SELECT * FROM settings").all();
+      const result = settings.reduce((acc: any, curr: any) => {
+        try {
+          acc[curr.key] = JSON.parse(curr.value);
+        } catch (e) {
+          console.error(`Failed to parse setting ${curr.key}:`, e);
+          acc[curr.key] = curr.value;
+        }
+        return acc;
+      }, {});
+      res.json(result);
+    } catch (e) {
+      console.error("Failed to fetch settings:", e);
+      res.status(500).json({ error: "Failed to fetch settings" });
+    }
   });
 
   app.post("/api/settings", (req, res) => {
@@ -243,37 +256,10 @@ async function startServer() {
     });
   }
 
-  const homeDir = os.homedir();
-  const certLocations = [
-    path.join(homeDir, ".office-addin-dev-certs", "localhost.crt"),
-    path.join(process.cwd(), "localhost.crt"),
-    path.join(homeDir, "localhost.crt")
-  ];
-  const keyLocations = [
-    path.join(homeDir, ".office-addin-dev-certs", "localhost.key"),
-    path.join(process.cwd(), "localhost.key"),
-    path.join(homeDir, "localhost.key")
-  ];
-
-  let certPath = certLocations.find(loc => fs.existsSync(loc));
-  let keyPath = keyLocations.find(loc => fs.existsSync(loc));
-
-  if (certPath && keyPath) {
-    console.log(`[HTTPS] Found certificates at: ${certPath}`);
-    const options = {
-      key: fs.readFileSync(keyPath),
-      cert: fs.readFileSync(certPath)
-    };
-    https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server running on https://localhost:${PORT}`);
-    });
-  } else {
-    console.warn("[HTTPS] Certificates NOT found. Falling back to HTTP.");
-    console.log(`Checked locations: ${certLocations.join(", ")}`);
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`⚠️ Server running on http://localhost:${PORT} (Outlook will block this!)`);
-    });
-  }
+  // Always use HTTP on port 3000 for the platform proxy
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
 }
 
 startServer();
