@@ -54,7 +54,6 @@ seedSettings.run("rules", JSON.stringify({
   urgent_keywords: ["quote", "RFQ", "price", "BOM"],
   manager_email: "manager@emetdorcom.co.il"
 }));
-seedSettings.run("gemini_enabled", JSON.stringify(true));
 
 async function startServer() {
   const app = express();

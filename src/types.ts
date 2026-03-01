@@ -17,7 +17,6 @@ export interface Settings {
     urgent_keywords: string[];
     manager_email: string;
   };
-  gemini_enabled: boolean;
 }
 
 export interface EmailItem {

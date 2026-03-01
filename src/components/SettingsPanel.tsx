@@ -11,9 +11,7 @@ import {
   History,
   AlertTriangle,
   Download,
-  FileCode,
-  ZapOff,
-  Zap
+  FileCode
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Settings } from '../types';
@@ -82,11 +80,6 @@ export default function SettingsPanel({ isRtl, setIsRtl }: SettingsPanelProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: 'vips', value: updated.vips })
     });
-    await fetch('/api/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: 'gemini_enabled', value: updated.gemini_enabled })
-    });
     setSaving(false);
     setSettings(updated);
   };
@@ -145,42 +138,6 @@ export default function SettingsPanel({ isRtl, setIsRtl }: SettingsPanelProps) {
             </button>
           </div>
         </div>
-      </section>
-
-      {/* AI & Automation - High Impact Toggle */}
-      <section className="space-y-4">
-        <h3 className="text-xs font-black text-slate-700 flex items-center gap-2 px-2">
-          <Zap className="w-4 h-4 text-amber-500" /> Intelligence Engine
-        </h3>
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200/60 shadow-sm flex items-center justify-between group">
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${settings.gemini_enabled ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
-              {settings.gemini_enabled ? <Zap className="w-6 h-6" /> : <ZapOff className="w-6 h-6" />}
-            </div>
-            <div>
-              <p className="text-sm font-black text-slate-900">Gemini AI Features</p>
-              <p className="text-[11px] text-slate-500 font-medium">Enable smart triage and automated deal detection.</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => saveSettings({ ...settings, gemini_enabled: !settings.gemini_enabled })}
-            className={`w-14 h-7 rounded-full transition-all relative ${settings.gemini_enabled ? 'bg-emerald-500 shadow-lg shadow-emerald-100' : 'bg-slate-200'}`}
-          >
-            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-sm ${settings.gemini_enabled ? 'right-1' : 'left-1'}`}></div>
-          </button>
-        </div>
-        {!settings.gemini_enabled && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-start gap-3"
-          >
-            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
-            <p className="text-[11px] text-amber-700 leading-relaxed font-medium">
-              Intelligence engine is offline. Smart triage, automated extraction, and strategic summaries are currently disabled.
-            </p>
-          </motion.div>
-        )}
       </section>
 
       {/* Interface & Language */}

@@ -59,7 +59,7 @@ export default function TaskList() {
           title: 'New Quote Request',
           desc: 'nitzan@client.il sent an urgent quote request for Dell Servers.',
           severity: 'high',
-          action: 'Scan with AI',
+          action: 'Manual Review',
           timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
           customer: 'Emet Computing'
         }

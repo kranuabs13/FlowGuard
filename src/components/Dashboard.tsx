@@ -6,7 +6,6 @@ import {
   Clock, 
   ArrowUpRight, 
   ChevronRight, 
-  Sparkles, 
   AlertCircle,
   DollarSign,
   Zap,
@@ -125,31 +124,7 @@ export default function Dashboard({ setActiveTab, currentEmail, isConnected }: D
       </div>
 
       {/* Contextual Analysis Card */}
-      {currentEmail && settings?.gemini_enabled ? (
-        <motion.div 
-          initial={{ scale: 0.98, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-slate-900 rounded-3xl md:rounded-[2.5rem] p-5 md:p-8 text-white shadow-2xl relative overflow-hidden group"
-        >
-          <div className="absolute top-0 right-0 p-4 md:p-8 opacity-10 group-hover:rotate-12 transition-transform duration-700">
-            <Sparkles className="w-20 h-20 md:w-32 md:h-32" />
-          </div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-3 md:mb-6">
-              <span className="bg-blue-500 text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full uppercase tracking-[0.2em] shadow-lg shadow-blue-500/30">AI Analysis Active</span>
-              <span className="text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">Ref: {currentEmail.subject}</span>
-            </div>
-            <h3 className="text-xl md:text-2xl font-black mb-1 md:mb-2 leading-tight">Smart Deal Detected</h3>
-            <p className="text-xs md:text-sm text-slate-400 mb-4 md:mb-8 max-w-md leading-relaxed font-medium">Gemini has identified a high-probability RFQ in your current selection.</p>
-            <button 
-              onClick={() => setActiveTab('Inbox')}
-              className="bg-white text-slate-900 px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black flex items-center gap-2 md:gap-3 hover:bg-slate-100 transition-all active:scale-95 shadow-xl"
-            >
-              Extract & Triage <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
-          </div>
-        </motion.div>
-      ) : currentEmail && !settings?.gemini_enabled ? (
+      {currentEmail ? (
         <div className="bg-white border border-slate-200/60 rounded-3xl md:rounded-[2.5rem] p-5 md:p-8 shadow-sm">
           <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-600">
@@ -160,7 +135,7 @@ export default function Dashboard({ setActiveTab, currentEmail, isConnected }: D
               <h3 className="text-base md:text-lg font-black text-slate-900">Manual Triage Required</h3>
             </div>
           </div>
-          <p className="text-xs md:text-sm text-slate-500 mb-4 md:mb-8 leading-relaxed font-medium">Gemini automation is currently disabled. Review this email manually.</p>
+          <p className="text-xs md:text-sm text-slate-500 mb-4 md:mb-8 leading-relaxed font-medium">Review this email manually to ensure we maintain our 24-hour response SLA for enterprise clients.</p>
           <button 
             onClick={() => setActiveTab('Inbox')}
             className="w-full bg-slate-900 text-white py-3 md:py-4 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Clock, Star, ChevronRight, Mail, Search, Sparkles, Plus, Inbox, CheckCircle2, ZapOff } from 'lucide-react';
+import { AlertCircle, Clock, Star, ChevronRight, Mail, Search, Plus, Inbox, CheckCircle2 } from 'lucide-react';
 import { EmailItem, Settings, Deal } from '../types';
-import { GoogleGenAI } from "@google/genai";
 import { motion } from 'motion/react';
 
 interface InboxTriageProps {
@@ -12,7 +11,6 @@ export default function InboxTriage({ currentEmail }: InboxTriageProps) {
   const [emails, setEmails] = useState<EmailItem[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [extracting, setExtracting] = useState(false);
   const [extractedDeal, setExtractedDeal] = useState<Partial<Deal> | null>(null);
   const [finishedThreads, setFinishedThreads] = useState<string[]>([]);
 
@@ -89,29 +87,6 @@ export default function InboxTriage({ currentEmail }: InboxTriageProps) {
 
     setEmails(processed as EmailItem[]);
     setLoading(false);
-  };
-
-  const extractDealData = async () => {
-    if (!currentEmail) return;
-    setExtracting(true);
-    
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Extract deal information from this email subject: "${currentEmail.subject}" and sender: "${currentEmail.sender}". 
-        Return JSON with: customer_name, value (number), subject, notes. 
-        If value is not found, estimate based on context or return 0.`,
-        config: { responseMimeType: "application/json" }
-      });
-
-      const data = JSON.parse(response.text);
-      setExtractedDeal(data);
-    } catch (e) {
-      console.error("Extraction failed", e);
-    } finally {
-      setExtracting(false);
-    }
   };
 
   const saveDeal = async () => {
@@ -211,33 +186,17 @@ export default function InboxTriage({ currentEmail }: InboxTriageProps) {
           transition={{ delay: 0.1 }}
           className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group"
         >
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform duration-700">
-            <Sparkles className="w-32 h-32 text-white" />
-          </div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-[11px] font-black text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                {settings?.gemini_enabled ? <Sparkles className="w-4 h-4" /> : <Inbox className="w-4 h-4" />} 
-                {settings?.gemini_enabled ? "AI Extraction" : "Manual Pipeline Entry"}
+                <Inbox className="w-4 h-4" /> Manual Pipeline Entry
               </h3>
-              {settings?.gemini_enabled ? (
-                !extractedDeal && (
-                  <button 
-                    onClick={extractDealData}
-                    disabled={extracting}
-                    className="text-[10px] bg-blue-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] disabled:opacity-50 transition-all active:scale-95 shadow-lg shadow-blue-900/40"
-                  >
-                    {extracting ? "Analyzing..." : "Run Smart Scan"}
-                  </button>
-                )
-              ) : (
-                <button 
-                  onClick={() => setExtractedDeal({ customer_name: currentEmail.sender.split('@')[0], subject: currentEmail.subject, value: 0, notes: '' })}
-                  className="text-[10px] bg-slate-700 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] transition-all active:scale-95"
-                >
-                  Manual Entry
-                </button>
-              )}
+              <button 
+                onClick={() => setExtractedDeal({ customer_name: currentEmail.sender.split('@')[0], subject: currentEmail.subject, value: 0, notes: '' })}
+                className="text-[10px] bg-slate-700 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-[0.2em] transition-all active:scale-95"
+              >
+                Manual Entry
+              </button>
             </div>
 
             {extractedDeal ? (
@@ -291,12 +250,6 @@ export default function InboxTriage({ currentEmail }: InboxTriageProps) {
               </motion.div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {!settings?.gemini_enabled && (
-                  <div className="sm:col-span-2 flex items-center gap-3 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 mb-2">
-                    <ZapOff className="w-4 h-4 text-amber-400" />
-                    <p className="text-[10px] text-amber-200 font-black uppercase tracking-[0.15em]">AI Automation Disabled in Config</p>
-                  </div>
-                )}
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                   <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest block mb-1">Priority Signal</span>
                   <span className={`text-sm font-black uppercase tracking-widest ${calculatePriority(currentEmail, settings) === 'High' ? 'text-red-400' : 'text-slate-200'}`}>
